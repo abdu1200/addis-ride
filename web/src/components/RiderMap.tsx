@@ -7,6 +7,7 @@ import L from 'leaflet';
 import { getGeohashBounds } from '../utils/geohash';
 import { useMemo, useRef, useState } from 'react';
 import { MapClickHandler } from './MapClickHandler';
+import { GeocoderControl } from './GeocoderControl';
 import { Button } from './ui/button';
 import { RouteFare, RequestRideProps, TripPreview, HTTPTripStartResponse } from "../types";
 import { RoutingControl } from "./RoutingControl";
@@ -18,8 +19,8 @@ const userMarker = new L.Icon({
     iconUrl: "data:image/svg+xml;utf8," + encodeURIComponent(
         `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#e11d48" stroke="#fff" stroke-width="1.5"><path d="M12 2C7.6 2 4 5.6 4 10c0 5.5 7.3 11.5 7.6 11.7.2.2.6.2.8 0C12.7 21.5 20 15.5 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>`
     ),
-    iconSize: [40, 40], // Size of the marker
-    iconAnchor: [20, 40], // Anchor point
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
 });
 
 const driverMarker = new L.Icon({
@@ -41,8 +42,8 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
     const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const location = {
-        latitude: 37.7749,
-        longitude: -122.4194,
+        latitude: 9.0402,
+        longitude: 38.7636,
     };
 
     const {
@@ -56,6 +57,33 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
 
     console.log(tripStatus)
 
+    const handleDestinationSelect = async (lat: number, lng: number) => {
+        if (trip?.tripID) {
+            return
+        }
+
+        setDestination([lat, lng])
+
+        const data = await requestRidePreview({
+            pickup: [location.latitude, location.longitude],
+            destination: [lat, lng],
+        })
+        console.log(data)
+
+        const parsedRoute = data.route.geometry[0].coordinates
+            .map((coord) => [coord.longitude, coord.latitude] as [number, number])
+
+        setTrip({
+            tripID: "",
+            route: parsedRoute,
+            rideFares: data.rideFares,
+            distance: data.route.distance,
+            duration: data.route.duration,
+        })
+
+        onRouteSelected?.(data.route.distance)
+    }
+
     const handleMapClick = async (e: L.LeafletMouseEvent) => {
         if (trip?.tripID) {
             return
@@ -65,28 +93,8 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
             clearTimeout(debounceTimeoutRef.current);
         }
 
-        debounceTimeoutRef.current = setTimeout(async () => {
-            setDestination([e.latlng.lat, e.latlng.lng])
-
-            const data = await requestRidePreview({
-                pickup: [location.latitude, location.longitude],
-                destination: [e.latlng.lat, e.latlng.lng],
-            })
-            console.log(data)
-
-            const parsedRoute = data.route.geometry[0].coordinates
-                .map((coord) => [coord.longitude, coord.latitude] as [number, number])
-
-            setTrip({
-                tripID: "",
-                route: parsedRoute,
-                rideFares: data.rideFares,
-                distance: data.route.distance,
-                duration: data.route.duration,
-            })
-
-            // Call onRouteSelected with the route distance
-            onRouteSelected?.(data.route.distance)
+        debounceTimeoutRef.current = setTimeout(() => {
+            handleDestinationSelect(e.latlng.lat, e.latlng.lng)
         }, 500);
     }
 
@@ -160,9 +168,10 @@ export default function RiderMap({ onRouteSelected }: RiderMapProps) {
                     ref={mapRef}
                 >
                     <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/'>CARTO</a>"
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
                     />
+                    <GeocoderControl onSelect={handleDestinationSelect} />
                     <Marker position={[location.latitude, location.longitude]} icon={userMarker} />
 
                     {/* Render geohash grid cells */}

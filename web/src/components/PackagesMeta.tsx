@@ -1,5 +1,5 @@
-import { Bus, Truck, Crown } from "lucide-react";
-import { Car } from "lucide-react";
+import { Bus, Zap } from "lucide-react";
+import { Car, CarFront } from "lucide-react";
 import { CarPackageSlug } from "../types";
 
 export const PackagesMeta: Record<CarPackageSlug, {
@@ -7,24 +7,24 @@ export const PackagesMeta: Record<CarPackageSlug, {
   icon: React.ReactNode,
   description: string,
 }> = {
-  [CarPackageSlug.SEDAN]: {
-    name: "Sedan",
+  [CarPackageSlug.VITZ]: {
+    name: "Vitz",
     icon: <Car />,
-    description: "Economic and comfortable",
+    description: "Compact and affordable",
   },
-  [CarPackageSlug.SUV]: {
-    name: "SUV",
-    icon: <Truck />,
-    description: "Spacious ride for groups",
+  [CarPackageSlug.COROLLA]: {
+    name: "Corolla",
+    icon: <CarFront />,
+    description: "Comfortable for everyday rides",
   },
-  [CarPackageSlug.VAN]: {
-    name: "Van",
+  [CarPackageSlug.MINIVAN]: {
+    name: "Minivan",
     icon: <Bus />,
-    description: "Perfect for larger groups",
+    description: "Room for the whole group",
   },
-  [CarPackageSlug.LUXURY]: {
-    name: "Luxury",
-    icon: <Crown />,
-    description: "Premium experience",
+  [CarPackageSlug.BYD]: {
+    name: "Byd",
+    icon: <Zap />,
+    description: "Electric and premium",
   },
 }

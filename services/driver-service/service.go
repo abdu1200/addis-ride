@@ -42,14 +42,14 @@ func (s *Service) FindAvailableDrivers(packageType string) []string {
 	return matchingDrivers
 }
 
-func (s *Service) RegisterDriver(driverId string, packageSlug string) (*pb.Driver, error) {
+func (s *Service) RegisterDriver(driverId string, packageSlug string, name string, phoneNumber string, carPlate string) (*pb.Driver, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	randomIndex := math.IntN(len(PredefinedRoutes))
 	randomRoute := PredefinedRoutes[randomIndex]
 
-	randomPlate := GenerateRandomPlate()
+	// randomPlate := GenerateRandomPlate()
 	randomAvatar := util.GetRandomAvatar(randomIndex)
 
 	// we can ignore this property for now, but it must be sent to the frontend.
@@ -59,10 +59,11 @@ func (s *Service) RegisterDriver(driverId string, packageSlug string) (*pb.Drive
 		Id:             driverId,
 		Geohash:        geohash,
 		Location:       &pb.Location{Latitude: randomRoute[0][0], Longitude: randomRoute[0][1]},
-		Name:           "Lando Norris",
+		Name:           name,
+		PhoneNumber:    phoneNumber,
 		PackageSlug:    packageSlug,
 		ProfilePicture: randomAvatar,
-		CarPlate:       randomPlate,
+		CarPlate:       carPlate,
 	}
 
 	s.drivers = append(s.drivers, &driverInMap{

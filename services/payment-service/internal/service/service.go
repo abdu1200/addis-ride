@@ -9,6 +9,7 @@ import (
 	"ride-sharing/services/payment-service/pkg/types"
 
 	"github.com/google/uuid"
+	"math"
 )
 
 type paymentService struct {
@@ -37,7 +38,9 @@ func (s *paymentService) CreatePaymentSession(
 		"driver_id": driverID,
 	}
 
-	sessionID, err := s.paymentProcessor.CreatePaymentSession(ctx, amount, currency, metadata)
+	finalAmount := int64(math.Round(float64(amount) * 2.5)) //multiply amount by 2.5 for stripe usage
+
+	sessionID, err := s.paymentProcessor.CreatePaymentSession(ctx, finalAmount, currency, metadata)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create payment session: %w", err)
 	}
@@ -47,7 +50,7 @@ func (s *paymentService) CreatePaymentSession(
 		TripID:          tripID,
 		UserID:          userID,
 		DriverID:        driverID,
-		Amount:          amount,
+		Amount:          finalAmount,
 		Currency:        currency,
 		StripeSessionID: sessionID,
 		CreatedAt:       time.Now(),

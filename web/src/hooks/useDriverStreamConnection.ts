@@ -11,13 +11,19 @@ interface useDriverConnectionProps {
   geohash: string;
   userID: string;
   packageSlug: CarPackageSlug;
+  name: string;
+  phoneNumber: string;
+  carPlate: string;
 }
 
 export const useDriverStreamConnection = ({
   location,
   geohash,
   userID,
-  packageSlug
+  packageSlug,
+  name,
+  phoneNumber,
+  carPlate
 }: useDriverConnectionProps) => {
   const [requestedTrip, setRequestedTrip] = useState<Trip | null>(null)
   const [tripStatus, setTripStatus] = useState<TripEvents | null>(null);
@@ -28,7 +34,15 @@ export const useDriverStreamConnection = ({
   useEffect(() => {
     if (!userID) return;
 
-    const websocket = new WebSocket(`${WEBSOCKET_URL}${BackendEndpoints.WS_DRIVERS}?userID=${userID}&packageSlug=${packageSlug}`);
+    const params = new URLSearchParams({
+      userID,
+      packageSlug,
+      name,
+      phoneNumber,
+      carPlate,
+    });
+
+    const websocket = new WebSocket(`${WEBSOCKET_URL}${BackendEndpoints.WS_DRIVERS}?${params.toString()}`);
     setWs(websocket);
 
     websocket.onopen = () => {

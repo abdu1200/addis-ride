@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: driver-service
-          image: ride-sharing/driver-service
+          image: karim888/ride-sharing-driver-service
           imagePullPolicy: Never
           ports:
             - containerPort: 9092

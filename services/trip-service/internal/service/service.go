@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"ride-sharing/services/trip-service/internal/domain"
 	tripTypes "ride-sharing/services/trip-service/pkg/types"
-	"ride-sharing/shared/env"
+	// "ride-sharing/shared/env"
 	pbd "ride-sharing/shared/proto/driver"
 	"ride-sharing/shared/proto/trip"
 	"ride-sharing/shared/types"
@@ -67,7 +67,8 @@ func (s *service) GetRoute(ctx context.Context, pickup, destination *types.Coord
 	}
 
 	// or use our self hosted API (check the course lesson: "Preparing for External API Failures")
-	baseURL := env.GetString("OSRM_API", "http://router.project-osrm.org")
+	// baseURL := env.GetString("OSRM_API", "http://router.project-osrm.org")
+	baseURL := "http://router.project-osrm.org"
 
 	url := fmt.Sprintf(
 		"%s/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
@@ -172,20 +173,20 @@ func estimateFareRoute(f *domain.RideFareModel, route *tripTypes.OsrmApiResponse
 func getBaseFares() []*domain.RideFareModel {
 	return []*domain.RideFareModel{
 		{
-			PackageSlug:       "suv",
-			TotalPriceInCents: 200,
+			PackageSlug:       "vitz",
+			TotalPriceInCents: 800,
 		},
 		{
-			PackageSlug:       "sedan",
-			TotalPriceInCents: 350,
+			PackageSlug:       "corolla",
+			TotalPriceInCents: 1200,
 		},
 		{
-			PackageSlug:       "van",
-			TotalPriceInCents: 400,
+			PackageSlug:       "minivan",
+			TotalPriceInCents: 1800,
 		},
 		{
-			PackageSlug:       "luxury",
-			TotalPriceInCents: 1000,
+			PackageSlug:       "byd",
+			TotalPriceInCents: 3500,
 		},
 	}
 }

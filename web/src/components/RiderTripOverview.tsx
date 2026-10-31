@@ -6,8 +6,13 @@ import { convertMetersToKilometers, convertSecondsToMinutes } from "../utils/mat
 import { Skeleton } from "./ui/skeleton"
 import { TripOverviewCard } from "./TripOverviewCard"
 import { StripePaymentButton } from "./StripePaymentButton"
-import { DriverCard } from "./DriverCard"
+//import { DriverCard } from "./DriverCard"
 import { TripEvents, PaymentEventSessionCreatedData } from "../contracts"
+import { AssignedDriverCard } from "./AssignedDriverCard"
+import { X } from "lucide-react";
+//import { AssignedDriverCard } from "./AssignedDriverCard"
+//import { DriverCard } from "./DriverCard"
+//import { AssignedDriverCard } from "./AssignedDriverCard"
 
 interface TripOverviewProps {
   trip: TripPreview | null;
@@ -30,29 +35,29 @@ export const RiderTripOverview = ({
     return (
       <TripOverviewCard
         title="Start a trip"
-        description="Click on the map to set a destination"
+        description="Click on the map to set a destination, or type one in the search box."
       />
     )
   }
 
-  if (status === TripEvents.PaymentSessionCreated && paymentSession) {
-    return (
-      <TripOverviewCard
-        title="Payment Required"
-        description="Please complete the payment to confirm your trip"
-      >
-        <div className="flex flex-col gap-4">
-          <DriverCard driver={assignedDriver} />
+  // if (status === TripEvents.PaymentSessionCreated && paymentSession) {
+  //   return (
+  //     <TripOverviewCard
+  //       title="Payment Required"
+  //       description="Please complete the payment to confirm your trip"
+  //     >
+  //       <div className="flex flex-col gap-4">
+  //         <DriverCard driver={assignedDriver} />
 
-          <div className="text-sm text-gray-500">
-            <p>Amount: {paymentSession.amount} {paymentSession.currency}</p>
-            <p>Trip ID: {paymentSession.tripID}</p>
-          </div>
-          <StripePaymentButton paymentSession={paymentSession} />
-        </div>
-      </TripOverviewCard>
-    )
-  }
+  //         <div className="text-sm text-gray-500">
+  //           <p>Amount: {paymentSession.amount} {paymentSession.currency}</p>
+  //           <p>Trip ID: {paymentSession.tripID}</p>
+  //         </div>
+  //         <StripePaymentButton paymentSession={paymentSession} />
+  //       </div>
+  //     </TripOverviewCard>
+  //   )
+  // }
 
   if (status === TripEvents.NoDriversFound) {
     return (
@@ -67,18 +72,43 @@ export const RiderTripOverview = ({
     )
   }
 
-  if (status === TripEvents.DriverAssigned) {
+  if (
+    status === TripEvents.DriverAssigned ||
+    (status === TripEvents.PaymentSessionCreated && paymentSession)
+  ) {
     return (
       <TripOverviewCard
         title="Driver assigned!"
-        description="Your driver is on the way, waiting for payment confirmation to show..."
+        description="Please contact your driver to meet up..."
       >
-        <div className="flex flex-col space-y-3 justify-center items-center mb-4">
-          {/* <p>Driver: {trip.id}</p> */}
+        <div className="flex flex-col gap-5">
+          <AssignedDriverCard driver={assignedDriver} />
+
+          {paymentSession && (
+            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+              <h3 className="font-medium text-gray-900">Payment</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Complete this once your trip has ended
+              </p>
+
+              <p className="text-2xl font-semibold text-gray-900 mt-4">
+                {paymentSession.amount} <span className="text-sm font-normal text-gray-400">birr</span>
+              </p>
+
+              <div className="mt-4">
+                <StripePaymentButton paymentSession={paymentSession} />
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={onCancel}
+            className="group flex items-center justify-center gap-1.5 text-sm text-gray-400 hover:text-red-500 transition-colors py-1"
+          >
+            <X className="w-3.5 h-3.5" />
+            Cancel current trip
+          </button>
         </div>
-        <Button variant="destructive" className="w-full" onClick={onCancel}>
-          Cancel current trip
-        </Button>
       </TripOverviewCard>
     )
   }

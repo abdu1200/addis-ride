@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: trip-service
-          image: ride-sharing/trip-service
+          image: karim888/ride-sharing-trip-service
           ports:
             - containerPort: 9093
           resources:

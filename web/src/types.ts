@@ -27,10 +27,10 @@ export interface Route {
 }
 
 export enum CarPackageSlug {
-    SEDAN = "sedan",
-    SUV = "suv",
-    VAN = "van",
-    LUXURY = "luxury",
+    VITZ = "vitz",
+    COROLLA = "corolla",
+    MINIVAN = "minivan",
+    BYD = "byd",
 }
 
 export interface RouteFare {
@@ -61,6 +61,7 @@ export interface Driver {
     location: Coordinate;
     geohash: string;
     name: string;
+    phoneNumber: string;
     profilePicture: string;
     carPlate: string;
 }

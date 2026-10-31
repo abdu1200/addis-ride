@@ -45,6 +45,7 @@ export function useRiderStreamConnection(location: Coordinate, userID: string) {
           setTripStatus(message.type);
           break;
         case TripEvents.DriverAssigned:
+          console.log('DriverAssigned payload:', message.data);
           setAssignedDriver(message.data.driver);
           setTripStatus(message.type);
           break;

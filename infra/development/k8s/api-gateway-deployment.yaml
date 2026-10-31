@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: ride-sharing/api-gateway
+          image: karim888/ride-sharing-api-gateway
           ports:
             - containerPort: 8081
           resources:

@@ -1,9 +1,10 @@
 import { Button } from "./ui/button"
-import { Clock } from 'lucide-react'
+import { Clock, Loader2 } from 'lucide-react'
 import { RouteFare, TripPreview } from '../types'
 import { convertMetersToKilometers, convertSecondsToMinutes } from "../utils/math"
 import { cn } from "../lib/utils"
 import { PackagesMeta } from "./PackagesMeta"
+import { useState } from "react"
 
 interface DriverListProps {
   trip: TripPreview | null;
@@ -13,6 +14,27 @@ interface DriverListProps {
 
 
 export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps) {
+  const [isSearching, setIsSearching] = useState(false)
+
+  const handleSelect = (fare: RouteFare) => {
+    setIsSearching(true)
+    onPackageSelect(fare)
+  }
+
+  if (isSearching) {
+    return (
+      <div className="flex items-center justify-center p-4 min-h-screen bg-black/20">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full flex flex-col items-center text-center gap-4">
+          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+          <div>
+            <h2 className="text-lg font-medium text-gray-900">Looking for a driver in your area...</h2>
+            <p className="text-sm text-gray-500 mt-1">This usually takes less than a minute</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-center p-4 min-h-screen bg-black/20">
       <div className="bg-white rounded-2xl shadow-lg p-6 max-w-md w-full">
@@ -20,12 +42,12 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
         <p className="text-sm text-gray-500 mb-6">Routing for {convertMetersToKilometers(trip?.distance ?? 0)}</p>
         <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
           <Clock className="w-4 h-4" />
-          <span>You&apos;ll arrive in: {convertSecondsToMinutes(trip?.duration ?? 0)}</span>
+          <span>You&apos;ll arrive in: {convertSecondsToMinutes((trip?.duration ?? 0) * 2)}</span>
         </div>
         <div className="space-y-4">
           {trip?.rideFares.map((fare) => {
             const Icon = PackagesMeta[fare.packageSlug].icon;
-            const price = fare.totalPriceInCents && `$${(fare.totalPriceInCents / 100).toFixed(2)}`
+            const price = fare.totalPriceInCents && `${((fare.totalPriceInCents * 2.5) / 100).toFixed(2)} birr`
 
             return (
               <div
@@ -34,7 +56,7 @@ export function DriverList({ trip, onPackageSelect, onCancel }: DriverListProps)
                   "flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer",
                   "hover:border-primary hover:bg-primary/5",
                 )}
-                onClick={() => onPackageSelect(fare)}
+                onClick={() => handleSelect(fare)}
               >
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-gray-100 rounded-lg">

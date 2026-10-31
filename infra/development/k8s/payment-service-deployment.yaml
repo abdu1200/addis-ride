@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: ride-sharing/payment-service
+          image: karim888/ride-sharing-payment-service
           ports:
             - containerPort: 9004
           resources:

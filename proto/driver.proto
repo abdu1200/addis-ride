@@ -12,6 +12,9 @@ service DriverService {
 message RegisterDriverRequest {
   string driverID = 1;
   string packageSlug = 2;
+  string name = 3;
+  string phoneNumber = 4;
+  string carPlate = 5;
 }
 
 message RegisterDriverResponse {
@@ -26,6 +29,7 @@ message Driver {
   string geohash = 5;
   string packageSlug = 6;
   Location location = 7;
+  string phoneNumber = 8;
 }
 
 message Location {

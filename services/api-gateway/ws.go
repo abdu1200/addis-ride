@@ -80,6 +80,24 @@ func handleDriversWebSocket(w http.ResponseWriter, r *http.Request, rb *messagin
 		return
 	}
 
+	name := r.URL.Query().Get("name")
+	if name == "" {
+		log.Println("No name provided")
+		return
+	}
+
+    phoneNumber := r.URL.Query().Get("phoneNumber")
+	if phoneNumber == "" {
+		log.Println("No phone number provided")
+		return
+	}
+
+	carPlate := r.URL.Query().Get("carPlate")
+	if carPlate == "" {
+		log.Println("No car plate provided")
+		return
+	}
+
 	// Add connection to manager
 	connManager.Add(userID, conn)
 
@@ -107,6 +125,9 @@ func handleDriversWebSocket(w http.ResponseWriter, r *http.Request, rb *messagin
 	driverData, err := driverService.Client.RegisterDriver(ctx, &driver.RegisterDriverRequest{
 		DriverID:    userID,
 		PackageSlug: packageSlug,
+		Name: name,
+		PhoneNumber: phoneNumber,
+		CarPlate:    carPlate,
 	})
 	if err != nil {
 		log.Printf("Error registering driver: %v", err)

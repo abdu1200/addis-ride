@@ -47,7 +47,7 @@ export const StripePaymentButton = ({
       disabled={isLoading}
       className="w-full"
     >
-      {isLoading ? "Loading..." : `Pay ${paymentSession.amount} ${paymentSession.currency}`}
+      {isLoading ? "Loading..." : `Pay ${paymentSession.amount} birr`}
     </Button>
   )
 } 
