@@ -73,7 +73,7 @@ The architecture uses an API Gateway serving client applications over REST and W
 
 ## Trip & Payment Lifecycle Flow
 
-The interaction flow below details route calculation via OSRM, driver matching via geohashes, and checkout completion using Stripe webhooks routed through the API Gateway.
+End-to-end request flow tracing a trip from rider request through driver acceptance to payment—showing how the trip service, driver matching engine, notification service, and payment gateway coordinate across gRPC calls and event streams.
 
 ```mermaid
 sequenceDiagram
