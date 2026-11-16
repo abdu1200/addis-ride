@@ -121,7 +121,7 @@ sequenceDiagram
     StripeAPI->>APIGateway: Webhook: payment success
     APIGateway-->>TripService: payment.event.success (event: payment now succeeded)
     Note over TripService: Marks the trip as completed and payed
-
+```
 
 ## deep dive: the matching engine
 
