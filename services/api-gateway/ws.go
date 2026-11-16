@@ -8,6 +8,7 @@ import (
 	"ride-sharing/shared/contracts"
 	"ride-sharing/shared/messaging"
 	"ride-sharing/shared/proto/driver"
+	"strconv"
 )
 
 var (
@@ -98,6 +99,25 @@ func handleDriversWebSocket(w http.ResponseWriter, r *http.Request, rb *messagin
 		return
 	}
 
+	latStr := r.URL.Query().Get("latitude")
+	lngStr := r.URL.Query().Get("longitude")
+	if latStr == "" || lngStr == "" {
+		http.Error(w, "latitude and longitude are required", http.StatusBadRequest)
+		return
+	}
+
+	latitude, err := strconv.ParseFloat(latStr, 64) // parse latitude and longitude to float64 they come as string from the frontend
+	if err != nil || latitude < -90 || latitude > 90 {
+		http.Error(w, "invalid latitude", http.StatusBadRequest)
+		return
+	}
+
+	longitude, err := strconv.ParseFloat(lngStr, 64)
+	if err != nil || longitude < -180 || longitude > 180 {
+		http.Error(w, "invalid longitude", http.StatusBadRequest)
+		return
+	}
+
 	// Add connection to manager
 	connManager.Add(userID, conn)
 
@@ -128,7 +148,12 @@ func handleDriversWebSocket(w http.ResponseWriter, r *http.Request, rb *messagin
 		Name: name,
 		PhoneNumber: phoneNumber,
 		CarPlate:    carPlate,
+		Location: &driver.Location{
+			Latitude:  latitude,
+			Longitude: longitude,
+	    },
 	})
+	
 	if err != nil {
 		log.Printf("Error registering driver: %v", err)
 		return
@@ -175,11 +200,7 @@ func handleDriversWebSocket(w http.ResponseWriter, r *http.Request, rb *messagin
 
 		// Handle the different message type
 		switch driverMsg.Type {
-		case contracts.DriverCmdLocation:
-			// Handle driver location update in the future
-			continue
-		case contracts.DriverCmdTripAccept, contracts.DriverCmdTripDecline:
-			// Forward the message to RabbitMQ
+		case contracts.DriverCmdLocation, contracts.DriverCmdTripAccept, contracts.DriverCmdTripDecline:
 			if err := rb.PublishMessage(ctx, driverMsg.Type, contracts.AmqpMessage{
 				OwnerID: userID,
 				Data:    driverMsg.Data,

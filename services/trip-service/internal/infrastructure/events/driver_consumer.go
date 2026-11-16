@@ -47,6 +47,7 @@ func (c *driverConsumer) Listen() error {
 				log.Printf("Failed to handle the trip accept: %v", err)
 				return err
 			}
+			return nil
 		case contracts.DriverCmdTripDecline:
 			if err := c.handleTripDeclined(ctx, payload.TripID, payload.RiderID); err != nil {
 				log.Printf("Failed to handle the trip decline: %v", err)

@@ -15,6 +15,7 @@ message RegisterDriverRequest {
   string name = 3;
   string phoneNumber = 4;
   string carPlate = 5;
+  Location location = 6;   // new: the driver's starting position (location)
 }
 
 message RegisterDriverResponse {

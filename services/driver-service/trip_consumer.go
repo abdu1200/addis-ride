@@ -14,12 +14,14 @@ import (
 type tripConsumer struct {
 	rabbitmq *messaging.RabbitMQ
 	service  *Service
+	offers *offer.Manager
 }
 
-func NewTripConsumer(rabbitmq *messaging.RabbitMQ, service *Service) *tripConsumer {
+func NewTripConsumer(rabbitmq *messaging.RabbitMQ, service *Service, offers *offer.Manager) *tripConsumer {
 	return &tripConsumer{
 		rabbitmq: rabbitmq,
 		service:  service,
+		offers:   offers,
 	}
 }
 
@@ -40,9 +42,10 @@ func (c *tripConsumer) Listen() error {
 		log.Printf("driver received message: %+v", payload)
 
 		switch msg.RoutingKey {
-		case contracts.TripEventCreated, contracts.TripEventDriverNotInterested:
-			return c.handleFindAndNotifyDrivers(ctx, payload)
-		}
+		case contracts.TripEventCreated:
+			return c.handleTripCreated(ctx, payload) //payload.Trip  // handles finding and notifiying drivers and more for a given trip
+		case contracts.TripEventDriverNotInterested:
+			return nil // the offer manager already handles declines (rejections), so this is not needed here anymore
 
 		log.Printf("unknown trip event: %+v", payload)
 
@@ -50,41 +53,23 @@ func (c *tripConsumer) Listen() error {
 	})
 }
 
-func (c *tripConsumer) handleFindAndNotifyDrivers(ctx context.Context, payload messaging.TripEventData) error {
-	suitableIDs := c.service.FindAvailableDrivers(payload.Trip.SelectedFare.PackageSlug)
+func (c *tripConsumer) handleTripCreated(ctx context.Context, payload messaging.TripEventData) error {
+	trip := payload.Trip
+    geo := payload.Trip.GetRoute().GetGeometry()
+	pickup := geo[0].GetCoordinates()[0] // first point (first coordinate) of the route = pickup
 
-	log.Printf("Found suitable drivers %v", len(suitableIDs))
-
-	if len(suitableIDs) == 0 {
-		// Notify the driver that no drivers are available
-		if err := c.rabbitmq.PublishMessage(ctx, contracts.TripEventNoDriversFound, contracts.AmqpMessage{
-			OwnerID: payload.Trip.UserID,
-		}); err != nil {
-			log.Printf("Failed to publish message to exchange: %v", err)
-			return err
-		}
-
-		return nil
-	}
-
-	// Get a random index from the matching drivers
-	randomIndex := rand.Intn(len(suitableIDs))
-
-	suitableDriverID := suitableIDs[randomIndex]
-
-	marshalledEvent, err := json.Marshal(payload)
+	marshalled, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	// Notify the driver about a potential trip
-	if err := c.rabbitmq.PublishMessage(ctx, contracts.DriverCmdTripRequest, contracts.AmqpMessage{
-		OwnerID: suitableDriverID,
-		Data:    marshalledEvent,
-	}); err != nil {
-		log.Printf("Failed to publish message to exchange: %v", err)
-		return err
-	}
-
+	c.offers.Start(offer.Trip{
+		ID:          trip.GetId(),
+		RiderID:     trip.GetUserID(),
+		PackageSlug: trip.GetSelectedFare().GetPackageSlug(),
+		Lat:         pickup.GetLatitude(),
+		Lng:         pickup.GetLongitude(),
+		Payload:     marshalled,
+	})
 	return nil
 }

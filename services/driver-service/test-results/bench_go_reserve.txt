@@ -1,0 +1,20 @@
+// hammering test result for Feature 4
+
+goos: linux
+goarch: amd64
+pkg: ride-sharing/services/driver-service/internal/index
+cpu: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
+BenchmarkReserveRelease-8      	25413229	        47.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReserveRelease-8      	25153224	        44.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReserveRelease-8      	27146496	        44.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReserveContention-8   	36991825	       113.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReserveContention-8   	17115154	        69.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReserveContention-8   	16695187	        70.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=1-8         	   10000	    156034 ns/op	  135188 B/op	      34 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=1-8         	   10000	    154451 ns/op	  135203 B/op	      34 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=1-8         	   10000	    162153 ns/op	  135210 B/op	      34 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=256-8       	   10000	    138820 ns/op	  135182 B/op	      34 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=256-8       	   10000	    137538 ns/op	  135226 B/op	      34 allocs/op
+BenchmarkMatchOne/drivers=100000/shards=256-8       	   10000	    150931 ns/op	  135178 B/op	      34 allocs/op
+PASS
+ok  	ride-sharing/services/driver-service/internal/index	27.535s

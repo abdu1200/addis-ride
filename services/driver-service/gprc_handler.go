@@ -24,7 +24,12 @@ func NewGrpcHandler(s *grpc.Server, service *Service) {
 }
 
 func (h *driverGrpcHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.RegisterDriverResponse, error) {
-	driver, err := h.service.RegisterDriver(req.GetDriverID(), req.GetPackageSlug(), req.GetName(), req.GetPhoneNumber(), req.GetCarPlate())
+	loc := req.GetLocation()
+	if loc == nil { 
+		return nil, status.Error(codes.InvalidArgument, "location is required")
+    }
+
+	driver, err := h.service.RegisterDriver(req.GetDriverID(), req.GetPackageSlug(), req.GetName(), req.GetPhoneNumber(), req.GetCarPlate(), loc.GetLatitude(), loc.GetLongitude(),)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to register driver")
 	}

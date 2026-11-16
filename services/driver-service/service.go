@@ -5,67 +5,83 @@ import (
 	pb "ride-sharing/shared/proto/driver"
 	"ride-sharing/shared/util"
 	"sync"
+	"fmt"
 
 	"github.com/mmcloughlin/geohash"
+	"ride-sharing/services/driver-service/internal/index"
+	"ride-sharing/services/driver-service/internal/matcher"
 )
 
 type driverInMap struct {
 	Driver *pb.Driver
-	// Index int
-	// TODO: route
 }
 
 type Service struct {
 	drivers []*driverInMap
 	mu      sync.RWMutex
+	idx     *index.Index 
+	mat     *matcher.Matcher
 }
 
 func NewService() *Service {
 	return &Service{
 		drivers: make([]*driverInMap, 0),
+		idx:     index.New(index.DefaultShards, index.DefaultPrecision),
+		mat:     matcher.New(idx, matcher.Config{QueueSize: 1024, SearchLimit: 5, MaxRadiusMeters: 5000}),
 	}
 }
 
-func (s *Service) FindAvailableDrivers(packageType string) []string {
-	var matchingDrivers []string
-
-	for _, driver := range s.drivers {
-		if driver.Driver.PackageSlug == packageType {
-			matchingDrivers = append(matchingDrivers, driver.Driver.Id)
-		}
+// this function is not used anymore, replaced by the offer manager
+// FindAndReserveNearestDriver returns driver IDs, closest first.
+func (s *Service) FindAndReserveNearestDriver(ctx context.Context, slug string, lat, lng float64) (string, bool, error) {
+	res, err := s.mat.Match(ctx, matcher.Request{
+		PackageSlug: slug,
+		Lat:         lat,
+		Lng:         lng,
+	})
+	if err != nil {
+		return "", false, err // queue full, timed out, or shutting down
 	}
-
-	if len(matchingDrivers) == 0 {
-		return []string{}
-	}
-
-	return matchingDrivers
+	return res.DriverID, res.Matched, nil
 }
 
-func (s *Service) RegisterDriver(driverId string, packageSlug string, name string, phoneNumber string, carPlate string) (*pb.Driver, error) {
+// not used anymore, replaced by the offer manager
+func (s *Service) ReleaseDriver(id string) {
+	 s.idx.Release(id) 
+}
+
+// not used anymore, replaced by the offer manager
+func (s *Service) AssignDriver(id string) bool { 
+	return s.idx.Assign(id) 
+}
+
+func (s *Service) CompleteTrip(id string) { 
+	s.idx.Complete(id) 
+}
+
+func (s *Service) RegisterDriver(driverId string, packageSlug string, name string, phoneNumber string, carPlate string, lat, lng float64) (*pb.Driver, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	randomIndex := math.IntN(len(PredefinedRoutes))
-	randomRoute := PredefinedRoutes[randomIndex]
+	// Put the driver in the geo-index first. It rejects invalid coordinates,
+	// so a bad location never creates a half-registered driver.
+	if err := s.idx.Upsert(driverId, packageSlug, lat, lng); err != nil {
+		return nil, fmt.Errorf("register driver %s: %w", driverId, err)
+	}
 
-	// randomPlate := GenerateRandomPlate()
-	randomAvatar := util.GetRandomAvatar(randomIndex)
-
-	// we can ignore this property for now, but it must be sent to the frontend.
-	geohash := geohash.Encode(randomRoute[0][0], randomRoute[0][1])
+	randomAvatar := util.GetRandomAvatar(math.IntN(10)) // picks 0 to 9
 
 	driver := &pb.Driver{
 		Id:             driverId,
-		Geohash:        geohash,
-		Location:       &pb.Location{Latitude: randomRoute[0][0], Longitude: randomRoute[0][1]},
+		Geohash:        geohash.Encode(lat, lng), // the frontend expects it 
+		Location:       &pb.Location{Latitude: lat, Longitude: lng}, // these guys should be latest datas to be sent to the frontend
 		Name:           name,
 		PhoneNumber:    phoneNumber,
 		PackageSlug:    packageSlug,
 		ProfilePicture: randomAvatar,
 		CarPlate:       carPlate,
 	}
-
+	///////////////// the above 'Geohash and Location' datas are send to the frontend so that the frontend can use them to show the driver on the map.
 	s.drivers = append(s.drivers, &driverInMap{
 		Driver: driver,
 	})
@@ -76,10 +92,22 @@ func (s *Service) RegisterDriver(driverId string, packageSlug string, name strin
 func (s *Service) UnregisterDriver(driverId string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	s.idx.Remove(driverId) // remove from the geo-index
 	
 	for i, driver := range s.drivers {
 		if driver.Driver.Id == driverId {
 			s.drivers = append(s.drivers[:i], s.drivers[i+1:]...)
+			return
 		}
 	}
+}
+
+func (s *Service) UpdateDriverLocation(driverID string, lat, lng float64) bool {
+	ok, err := s.idx.UpdateLocation(driverID, lat, lng)
+	return ok && err == nil
+}
+
+func (s *Service) Close() { 
+	s.mat.Close() 
 }

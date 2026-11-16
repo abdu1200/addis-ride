@@ -1,0 +1,41 @@
+// hammering search test result for feature 3
+
+goos: linux
+goarch: amd64
+pkg: ride-sharing/services/driver-service/internal/index
+cpu: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
+BenchmarkSearchSingleThread/drivers=10000-8         	   10000	    134707 ns/op	   19177 B/op	      36 allocs/op
+BenchmarkSearchSingleThread/drivers=10000-8         	    9187	    160695 ns/op	   19154 B/op	      36 allocs/op
+BenchmarkSearchSingleThread/drivers=10000-8         	    8460	    150934 ns/op	   19180 B/op	      36 allocs/op
+BenchmarkSearchSingleThread/drivers=50000-8         	    6237	    220394 ns/op	   59713 B/op	      30 allocs/op
+BenchmarkSearchSingleThread/drivers=50000-8         	    6900	    169654 ns/op	   59730 B/op	      30 allocs/op
+BenchmarkSearchSingleThread/drivers=50000-8         	    7099	    171734 ns/op	   59781 B/op	      30 allocs/op
+BenchmarkSearchSingleThread/drivers=100000-8        	    3513	    327287 ns/op	  133159 B/op	      34 allocs/op
+BenchmarkSearchSingleThread/drivers=100000-8        	    4339	    316695 ns/op	  133253 B/op	      34 allocs/op
+BenchmarkSearchSingleThread/drivers=100000-8        	    3842	    333524 ns/op	  133254 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=1-8    	   33288	     30687 ns/op	   19046 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=1-8    	   33586	     30196 ns/op	   19050 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=1-8    	   35643	     30288 ns/op	   19054 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=256-8  	   33613	     30798 ns/op	   19048 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=256-8  	   35728	     29919 ns/op	   19060 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=10000/shards=256-8  	   34404	     30202 ns/op	   19055 B/op	      36 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=1-8    	   21392	     55623 ns/op	   59720 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=1-8    	   22126	     56753 ns/op	   59736 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=1-8    	   17754	     59289 ns/op	   59699 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=256-8  	   21776	     52395 ns/op	   59727 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=256-8  	   21112	     52658 ns/op	   59722 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=50000/shards=256-8  	   21775	     55497 ns/op	   59722 B/op	      30 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=1-8   	   11380	    103768 ns/op	  132936 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=1-8   	   10000	    105028 ns/op	  132942 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=1-8   	   10000	    105827 ns/op	  132994 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=256-8 	   11358	    104924 ns/op	  132934 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=256-8 	   11383	    105794 ns/op	  132947 B/op	      34 allocs/op
+BenchmarkSearchParallel/drivers=100000/shards=256-8 	   10702	    104983 ns/op	  132947 B/op	      34 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=1-8         	   22246	     53490 ns/op	   26675 B/op	       7 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=1-8         	   27553	     52144 ns/op	   26612 B/op	       7 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=1-8         	   26664	     43015 ns/op	   26732 B/op	       7 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=256-8       	   50422	     21948 ns/op	   26799 B/op	       7 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=256-8       	   48009	     22039 ns/op	   26883 B/op	       7 allocs/op
+BenchmarkMixedUpsertSearch/drivers=100000/shards=256-8       	   48409	     22165 ns/op	   26848 B/op	       7 allocs/op
+PASS
+ok  	ride-sharing/services/driver-service/internal/index	74.077s

@@ -58,14 +58,42 @@ func main() {
 
 	log.Println("Starting RabbitMQ connection")
 
+	offers := offer.New(svc.mat, svc.idx, &rabbitNotifier{rabbitmq: rabbitmq}, offer.Config{
+		OfferTimeout: 15 * time.Second,
+		MatchTimeout: 3 * time.Second,
+		MaxAttempts:  5,
+	}) //manager
+	defer offers.Close()
+
 	// Starting the gRPC server
 	grpcServer := grpcserver.NewServer(tracing.WithTracingInterceptors()...)
 	NewGrpcHandler(grpcServer, svc)
 
-	consumer := NewTripConsumer(rabbitmq, svc)
+	tripconsumer := NewTripConsumer(rabbitmq, svc, offers)
 	go func() {
-		if err := consumer.Listen(); err != nil {
-			log.Fatalf("Failed to listen to the message: %v", err)
+		if err := tripconsumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the trip message: %v", err)
+		}
+	}()
+
+	locConsumer := NewLocationConsumer(rabbitmq, svc) // new
+	go func() {
+		if err := locConsumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the location message: %v", err)
+		}
+	}()
+
+	drivConsumer := NewDriverResponseConsumer(rabbitmq, svc, offers)
+	go func() {
+		if err := drivConsumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the driver response message: %v", err)
+		}
+	}()
+
+	paymConsumer := NewPaymentConsumer(rabbitmq, svc)   
+	go func() {
+		if err := paymConsumer.Listen(); err != nil {
+			log.Fatalf("Failed to listen to the payment success message: %v", err)
 		}
 	}()
 

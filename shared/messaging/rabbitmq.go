@@ -220,6 +220,14 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 	}
 
 	if err := r.declareAndBindQueue(
+		DriverLocationQueue,
+		[]string{contracts.DriverCmdLocation},
+		TripExchange,
+	); err != nil {
+		return err
+	}
+
+	if err := r.declareAndBindQueue(
 		DriverCmdTripRequestQueue,
 		[]string{contracts.DriverCmdTripRequest},
 		TripExchange,
@@ -229,6 +237,14 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 
 	if err := r.declareAndBindQueue(
 		DriverTripResponseQueue,
+		[]string{contracts.DriverCmdTripAccept, contracts.DriverCmdTripDecline},
+		TripExchange,
+	); err != nil {
+		return err
+	}
+
+	if err := r.declareAndBindQueue(
+		DriverServiceTripResponseQueue,
 		[]string{contracts.DriverCmdTripAccept, contracts.DriverCmdTripDecline},
 		TripExchange,
 	); err != nil {
@@ -269,6 +285,14 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 
 	if err := r.declareAndBindQueue(
 		NotifyPaymentSuccessQueue,
+		[]string{contracts.PaymentEventSuccess},
+		TripExchange,
+	); err != nil {
+		return err
+	}
+
+	if err := r.declareAndBindQueue(
+		DriverServicePaymentSuccessQueue,
 		[]string{contracts.PaymentEventSuccess},
 		TripExchange,
 	); err != nil {
