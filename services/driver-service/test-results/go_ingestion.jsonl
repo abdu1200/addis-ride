@@ -1,5 +1,3 @@
-// realistic test result for feature 2
-
 {"lang":"go","drivers":10000,"shards":1,"interval_sec":4,"duration_sec":60.082488821,"updates":149892,"cell_moves":7933,"errors":0,"expected_updates_per_sec":2500,"actual_updates_per_sec":2494.7701558529616,"p50_us":4.1,"p95_us":16.3,"p99_us":29.5,"max_us":7290.5,"peak_heap_mb":25.165817260742188,"num_gc":3,"max_gc_pause_us":1181.1,"index_size":10000,"gomaxprocs":8}
 {"lang":"go","drivers":10000,"shards":256,"interval_sec":4,"duration_sec":60.049638667,"updates":149800,"cell_moves":7930,"errors":0,"expected_updates_per_sec":2500,"actual_updates_per_sec":2494.602853993889,"p50_us":9.6,"p95_us":13.1,"p99_us":46.8,"max_us":1971,"peak_heap_mb":24.682144165039062,"num_gc":3,"max_gc_pause_us":3621.398,"index_size":10000,"gomaxprocs":8}
 {"lang":"go","drivers":50000,"shards":1,"interval_sec":4,"duration_sec":60.179063708,"updates":738826,"cell_moves":39787,"errors":0,"expected_updates_per_sec":12500,"actual_updates_per_sec":12277.126868987543,"p50_us":4,"p95_us":16.7,"p99_us":129.3,"max_us":82018.798,"peak_heap_mb":118.55726623535156,"num_gc":5,"max_gc_pause_us":4536.7,"index_size":50000,"gomaxprocs":8}

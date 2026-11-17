@@ -1,5 +1,3 @@
-// hammering search test result for feature 3
-
 goos: linux
 goarch: amd64
 pkg: ride-sharing/services/driver-service/internal/index
