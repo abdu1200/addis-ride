@@ -63,7 +63,7 @@ sequenceDiagram
     Note over TripService: Marks the trip as completed and payed
 ```
 
-## deep dive: the matching engine
+## Deep Dive: The Driver Matching Engine
 
 A real-time matching engine for a ride-sharing service. It keeps every driver's location in memory, finds the nearest free drivers, makes sure no driver is ever booked twice, and offers trips to drivers with timeouts and cancellation.
 
