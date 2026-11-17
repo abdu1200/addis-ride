@@ -71,7 +71,7 @@ It handled **100,000 drivers sending a location update every 4 seconds (about 25
 
 [Demo video](#) (the real engine, with simulated drivers and riders)
 
-The engine runs inside the driver service of a ride-sharing microservice system (gRPC, RabbitMQ, a WebSocket gateway). This README covers the engine itself.
+The engine runs inside the driver service of the ride-sharing microservice system.
 
 ## What it does
 
@@ -109,7 +109,7 @@ Locks are always taken in the same order: driver shard first, then cell shards i
 
 A driver who stays in the same cell is overwritten in place. A driver who crosses into a new cell locks **both** cell shards at once, so a reader never sees the driver in two cells or in none. Updates only touch drivers that already exist, so a late update can never bring back a driver who just disconnected.
 
-**Hammering test** (the code called as fast as it can, 8 goroutines, median of 5 runs; [raw output](benchmarks/bench_go_index.txt)):
+**Hammering test** (the code called as fast as it can, 8 goroutines, median of 5 runs; [raw output](test-results/bench_go_index.txt)):
 
 | Shards | Update time per op | Updates per second | Speed-up vs 1 shard |
 |---|---|---|---|
@@ -120,7 +120,7 @@ A driver who stays in the same cell is overwritten in place. A driver who crosse
 
 With 80% updates and 20% reads at the same time: 4,153 ns (1 shard), 1,246 ns (64 shards), 786 ns (256 shards), which is 5.3x faster with 256 shards. The 16-shard run was noisy (1,963 to 3,748 ns across runs).
 
-**Realistic test** (every driver sends one update every 4 seconds for 60 seconds; [raw output](benchmarks/go_ingestion.jsonl)):
+**Realistic test** (every driver sends one update every 4 seconds for 60 seconds; [raw output](test-results/go_ingestion.jsonl)):
 
 | Drivers | Shards | Updates/s | p50 | p95 | p99 | Peak memory |
 |---|---|---|---|---|---|---|
@@ -141,7 +141,7 @@ Latency here is the time of one location update call. At 100,000 drivers, shardi
 
 A search is not one snapshot, because drivers keep moving while it runs. A driver can be copied from one cell, move into a cell that has not been scanned yet, and be copied again, so results are de-duplicated by driver ID.
 
-**Hammering test** (median of 3 runs; [raw output](benchmarks/bench_go_search.txt)):
+**Hammering test** (median of 3 runs; [raw output](test-results/bench_go_search.txt)):
 
 | Drivers | One goroutine | 8 goroutines, 1 shard | 8 goroutines, 256 shards | Memory per search |
 |---|---|---|---|---|
@@ -168,7 +168,7 @@ When a driver is removed, the state is set to offline first, so a reservation al
 - Many reserve and release cycles: two goroutines never hold the same driver.
 - A reservation racing with a removal: no panic, the index stays consistent.
 
-**Hammering test** (median of 3 runs; [raw output](benchmarks/bench_go_reserve.txt)):
+**Hammering test** (median of 3 runs; [raw output](test-results/bench_go_reserve.txt)):
 
 | Benchmark | Time per op | Memory |
 |---|---|---|
@@ -185,7 +185,7 @@ Ride requests go into a bounded queue (a buffered channel) served by a fixed set
 
 Go sees 8 hardware threads on this 4-core laptop, so 8 goroutines can run at the same instant. The search is pure CPU work, so 8 workers use the machine fully.
 
-**Hammering test** (8 caller goroutines, median of 3 runs; [raw output](benchmarks/bench_go_matcher.txt)):
+**Hammering test** (8 caller goroutines, median of 3 runs; [raw output](test-results/bench_go_matcher.txt)):
 
 | Setup | Time per request | Requests per second | Memory |
 |---|---|---|---|
@@ -196,7 +196,7 @@ Go sees 8 hardware threads on this 4-core laptop, so 8 goroutines can run at the
 
 The queue adds no measurable cost (2 extra allocations). 32 workers are no faster than 8, as expected for CPU-bound work on 8 threads.
 
-**Realistic test** (requests arrive at a fixed rate for 20 seconds, 100,000 drivers, queue of 1,024; [raw output](benchmarks/go_matching.jsonl)). Latency is from submit to result for accepted requests, including time waiting in the queue:
+**Realistic test** (requests arrive at a fixed rate for 20 seconds, 100,000 drivers, queue of 1,024; [raw output](test-results/go_matching.jsonl)). Latency is from submit to result for accepted requests, including time waiting in the queue:
 
 | Workers | Requests/s sent | Completed/s | Rejected | p50 | p95 | p99 | Peak memory |
 |---|---|---|---|---|---|---|---|
@@ -279,7 +279,7 @@ go run ./cmd/simulator
 
 - **Hammering tests** call the code as fast as possible for about a second. They show the maximum it can do. For the parallel ones, "time per op" is total time divided by total operations across 8 goroutines, so it is not the latency of one call.
 - **Realistic tests** send work at a fixed rate, like real traffic, for 20 to 60 seconds. They show latency and rejections at a given load.
-- Hammering results are the median of 3 to 5 runs. The raw files are in [`benchmarks/`](benchmarks/) so every number can be checked.
+- Hammering results are the median of 3 to 5 runs. The raw files are in [`test-results/`](test-results/) so every number can be checked.
 
 ## Limits
 
@@ -289,14 +289,3 @@ go run ./cmd/simulator
 - **Known gap:** if a driver accepts after their offer already timed out, the trip service has already recorded that driver. The driver service ignores the late accept, but the trip service does not know that. The fix is for the driver service to confirm accepts before the trip service records them.
 - **One node.** The index lives in memory in one process and is not persisted or partitioned across machines.
 
-## layout
-
-```
-internal/index/      geo-index, location updates, search, reservation
-internal/matcher/    bounded queue and worker pool
-internal/offer/      offer timeouts, decline, cancel
-cmd/loadgen/         realistic location-update load test
-cmd/matchload/       realistic request-rate load test
-cmd/simulator/       live demo with simulated drivers and riders
-test-results/        raw benchmark output
-```
