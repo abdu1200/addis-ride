@@ -69,8 +69,6 @@ A real-time matching engine for a ride-sharing service. It keeps every driver's 
 
 It handled **100,000 drivers sending a location update every 4 seconds (about 25,000 updates per second)** and **about 8,000 ride requests per second** on a 4-core laptop, with no double bookings. When overloaded, it turns requests away instead of falling over.
 
-[Demo video](#) (the real engine, with simulated drivers and riders)
-
 The engine runs inside the driver service of the ride-sharing microservice system.
 
 ## What it does
@@ -243,7 +241,7 @@ There is no benchmark for this part, because it is about correctness, not speed.
 | Close | Every pending offer is released on shutdown |
 | Cancel storm | 1,000 trips for 300 drivers with random accepts, declines, silence and cancels: no driver left reserved, no repeated offers, no leaked goroutines |
 
-## Hard problems along the way
+## Some challenges along the way
 
 - **The race detector crashes above 8,128 goroutines.** The 10,000-request test runs through a pool of 500 workers.
 - **A driver can go offline in the middle of being reserved.** Removal marks the driver offline first, so a reservation already in flight fails.
